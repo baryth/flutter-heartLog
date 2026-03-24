@@ -1,3 +1,3 @@
-# flutter_cisnieniomierz
+# flutter_heartLog
 
-A new Flutter project.
+A new Flutter vibecoded project.
