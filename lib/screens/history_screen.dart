@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../l10n/strings.dart';
 import '../models/measurement.dart';
 import 'home_screen.dart' show MeasurementCard;
 
@@ -49,9 +50,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),
-          title: const Text(
-            'Edit Measurement',
-            style: TextStyle(
+          title: Text(
+            AppStrings.instance.editMeasurement,
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
               color: _textPrimary,
@@ -66,7 +67,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 20),
               _ValueAdjuster(
-                label: 'Systolic',
+                label: AppStrings.instance.systolic,
                 unit: 'mmHg',
                 value: systolic,
                 min: 60,
@@ -75,7 +76,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 12),
               _ValueAdjuster(
-                label: 'Diastolic',
+                label: AppStrings.instance.diastolic,
                 unit: 'mmHg',
                 value: diastolic,
                 min: 40,
@@ -84,7 +85,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 12),
               _ValueAdjuster(
-                label: 'Pulse',
+                label: AppStrings.instance.pulse,
                 unit: 'bpm',
                 value: pulse,
                 min: 30,
@@ -107,9 +108,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: _textSecondary),
+                    child: Text(
+                      AppStrings.instance.cancel,
+                      style: const TextStyle(color: _textSecondary),
                     ),
                   ),
                 ),
@@ -137,9 +138,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    child: Text(
+                      AppStrings.instance.save,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -172,11 +173,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'History',
+                      AppStrings.instance.historyTitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: _textPrimary,
@@ -198,29 +199,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Swipe left to delete · tap to edit',
+            Text(
+              AppStrings.instance.swipeHint,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
+              style: const TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
             ),
             const SizedBox(height: 14),
 
             // List
             Expanded(
               child: _measurements.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.favorite_border_rounded,
                             size: 48,
                             color: Color(0x597A9BB5),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
-                            'No measurements yet',
-                            style: TextStyle(
+                            AppStrings.instance.noMeasurements,
+                            style: const TextStyle(
                               color: Color(0xFF7A9BB5),
                               fontSize: 14,
                             ),

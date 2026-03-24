@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../l10n/strings.dart';
 import '../models/measurement.dart';
 import '../widgets/gear_knob.dart';
 import 'history_screen.dart';
@@ -22,11 +23,11 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color _bgColor = Color(0xFFF4F7FF);
   static const Color _textPrimary = Color(0xFF2C4A6E);
   static const Color _textSecondary = Color(0xFF7A9BB5);
-  static const Color _gearSystolic = Color(0xFFFFADB8);
-  static const Color _gearDiastolic = Color(0xFF9BBFE8);
-  static const Color _gearPulse = Color(0xFF99D6B5);
+  static const Color _gearSystolic = Color(0xFFADD8F0);
+  static const Color _gearDiastolic = Color(0xFF5B8DB8);
+  static const Color _gearPulse = Color(0xFFFF9090);
+  static const Color _confirmColor = Color(0xFF99D6B5);
   static const Color _buttonColor = Color(0xFF6B9DC2);
-  static const Color _divider = Color(0xFFE4EDF7);
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Measurement saved'),
+          content: Text(AppStrings.instance.measurementSaved),
           backgroundColor: _buttonColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -90,8 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadMeasurements();
   }
 
-  Widget _buildKnob(int knobIndex, {required bool active}) {
-    const labels = ['SYSTOLIC', 'DIASTOLIC', 'PULSE'];
+  Widget _buildKnob(int knobIndex, {required bool active, VoidCallback? onTap}) {
+    final s = AppStrings.instance;
+    final labels = [s.systolic.toUpperCase(), s.diastolic.toUpperCase(), s.pulse.toUpperCase()];
     const units = ['mmHg', 'mmHg', 'bpm'];
     const colors = [_gearSystolic, _gearDiastolic, _gearPulse];
     const mins = [60, 40, 30];
@@ -102,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
       (int v) => setState(() => _diastolic = v),
       (int v) => setState(() => _pulse = v),
     ];
-    return Opacity(
+    final knob = Opacity(
       opacity: active ? 1.0 : 0.38,
       child: GearKnob(
         label: labels[knobIndex],
@@ -116,6 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
         onChanged: callbacks[knobIndex],
       ),
     );
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: knob,
+      );
+    }
+    return knob;
   }
 
   @override
@@ -140,15 +150,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: const Icon(Icons.history_rounded),
                         color: _textPrimary,
                         iconSize: 26,
-                        tooltip: 'History',
+                        tooltip: AppStrings.instance.historyTooltip,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Blood Pressure',
+                          AppStrings.instance.appTitle,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: _textPrimary,
@@ -160,9 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  const Text(
-                    'Track your measurements',
-                    style: TextStyle(fontSize: 12, color: _textSecondary),
+                  Text(
+                    AppStrings.instance.appSubtitle,
+                    style: const TextStyle(fontSize: 12, color: _textSecondary),
                   ),
                   const SizedBox(height: 20),
 
@@ -196,12 +206,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: _buildKnob(
                                       _step >= 3 ? 0 : (_step + 2) % 3,
                                       active: false,
+                                      onTap: () {
+                                        final idx = _step >= 3 ? 0 : (_step + 2) % 3;
+                                        setState(() => _step = idx);
+                                      },
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                            Container(width: 1, height: 218, color: _divider),
                             // Center: always the active knob
                             Expanded(
                               child: Center(
@@ -217,7 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            Container(width: 1, height: 218, color: _divider),
                             // Right: always the knob "ahead" of the active one (circular)
                             Expanded(
                               child: Center(
@@ -228,6 +240,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: _buildKnob(
                                       _step >= 3 ? 2 : (_step + 1) % 3,
                                       active: false,
+                                      onTap: () {
+                                        final idx = _step >= 3 ? 2 : (_step + 1) % 3;
+                                        setState(() => _step = idx);
+                                      },
                                     ),
                                   ),
                                 ),
@@ -241,8 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 7),
                   Text(
                     _step >= 3
-                        ? 'All values set  —  tap Add to save'
-                        : '${ ['Set systolic', 'Set diastolic', 'Set pulse'][_step]}  ·  drag to adjust',
+                        ? AppStrings.instance.allValuesSet
+                        : '${[AppStrings.instance.setSystolic, AppStrings.instance.setDiastolic, AppStrings.instance.setPulse][_step]}  ·  ${AppStrings.instance.dragToAdjust}',
                     style: const TextStyle(fontSize: 11, color: _textSecondary),
                   ),
                   const SizedBox(height: 12),
@@ -261,20 +277,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   key: ValueKey(_step),
                                   onPressed: () => setState(() => _step++),
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: [
-                                        _gearSystolic,
-                                        _gearDiastolic,
-                                        _gearPulse,
-                                      ][_step],
+                                    side: const BorderSide(
+                                      color: _confirmColor,
                                       width: 1.5,
                                     ),
                                     foregroundColor: _textPrimary,
-                                    backgroundColor: [
-                                      _gearSystolic,
-                                      _gearDiastolic,
-                                      _gearPulse,
-                                    ][_step].withValues(alpha: 0.15),
+                                    backgroundColor: _confirmColor.withValues(alpha: 0.15),
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15),
@@ -285,9 +293,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         [
-                                          'Confirm systolic',
-                                          'Confirm diastolic',
-                                          'Confirm pulse',
+                                          AppStrings.instance.confirmSystolic,
+                                          AppStrings.instance.confirmDiastolic,
+                                          AppStrings.instance.confirmPulse,
                                         ][_step],
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -295,7 +303,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.check_rounded, size: 17),
+                                      Icon(
+                                        _step == 2 ? Icons.favorite_rounded : Icons.check_rounded,
+                                        size: 17,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -332,9 +343,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'Add',
-                                style: TextStyle(
+                            : Text(
+                                AppStrings.instance.add,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.3,
@@ -351,9 +362,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          const Text(
-                            'Recent',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.instance.recent,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: _textPrimary,
@@ -361,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const Spacer(),
                           Text(
-                            '${_measurements.length} records',
+                            '${_measurements.length} ${AppStrings.instance.records}',
                             style: const TextStyle(
                               fontSize: 11,
                               color: _textSecondary,
@@ -443,24 +454,24 @@ class _HomeScreenState extends State<HomeScreen> {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.favorite_border_rounded,
             size: 48,
             color: Color(0x597A9BB5),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
-            'No measurements yet',
-            style: TextStyle(color: Color(0xFF7A9BB5), fontSize: 14),
+            AppStrings.instance.noMeasurements,
+            style: const TextStyle(color: Color(0xFF7A9BB5), fontSize: 14),
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           Text(
-            'Add your first reading above',
-            style: TextStyle(color: Color(0xFF7A9BB5), fontSize: 11),
+            AppStrings.instance.addFirstReading,
+            style: const TextStyle(color: Color(0xFF7A9BB5), fontSize: 11),
           ),
         ],
       ),
