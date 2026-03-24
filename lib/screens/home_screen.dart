@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadMeasurements();
   }
 
-  Widget _buildKnob(int knobStep) {
+  Widget _buildKnob(int knobIndex, {required bool active}) {
     const labels = ['SYSTOLIC', 'DIASTOLIC', 'PULSE'];
     const units = ['mmHg', 'mmHg', 'bpm'];
     const colors = [_gearSystolic, _gearDiastolic, _gearPulse];
@@ -102,25 +102,18 @@ class _HomeScreenState extends State<HomeScreen> {
       (int v) => setState(() => _diastolic = v),
       (int v) => setState(() => _pulse = v),
     ];
-    final isActive = _step == knobStep;
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(end: isActive ? 100.0 : 58.0),
-      duration: const Duration(milliseconds: 380),
-      curve: Curves.easeInOutCubic,
-      builder: (_, gearSize, _) => AnimatedOpacity(
-        opacity: isActive ? 1.0 : 0.38,
-        duration: const Duration(milliseconds: 300),
-        child: GearKnob(
-          label: labels[knobStep],
-          unit: units[knobStep],
-          value: values[knobStep],
-          min: mins[knobStep],
-          max: maxs[knobStep],
-          gearColor: colors[knobStep],
-          gearSize: gearSize,
-          enabled: isActive,
-          onChanged: callbacks[knobStep],
-        ),
+    return Opacity(
+      opacity: active ? 1.0 : 0.38,
+      child: GearKnob(
+        label: labels[knobIndex],
+        unit: units[knobIndex],
+        value: values[knobIndex],
+        min: mins[knobIndex],
+        max: maxs[knobIndex],
+        gearColor: colors[knobIndex],
+        gearSize: active ? 100.0 : 58.0,
+        enabled: active,
+        onChanged: callbacks[knobIndex],
       ),
     );
   }
@@ -193,11 +186,53 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Expanded(child: Center(child: _buildKnob(0))),
+                            // Left: always the knob "behind" the active one (circular)
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('l$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 0 : (_step + 2) % 3,
+                                      active: false,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                             Container(width: 1, height: 218, color: _divider),
-                            Expanded(child: Center(child: _buildKnob(1))),
+                            // Center: always the active knob
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('c$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 1 : _step,
+                                      active: _step < 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                             Container(width: 1, height: 218, color: _divider),
-                            Expanded(child: Center(child: _buildKnob(2))),
+                            // Right: always the knob "ahead" of the active one (circular)
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('r$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 2 : (_step + 1) % 3,
+                                      active: false,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
