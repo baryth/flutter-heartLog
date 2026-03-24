@@ -4,6 +4,7 @@ import '../l10n/strings.dart';
 import '../models/measurement.dart';
 import '../widgets/gear_knob.dart';
 import 'history_screen.dart';
+import 'metrics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -91,6 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadMeasurements();
   }
 
+  void _openMetrics() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MetricsScreen()),
+    );
+  }
+
   Widget _buildKnob(int knobIndex, {required bool active, VoidCallback? onTap}) {
     final s = AppStrings.instance;
     final labels = [s.systolic.toUpperCase(), s.diastolic.toUpperCase(), s.pulse.toUpperCase()];
@@ -166,7 +174,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 26), // balance the icon
+                      IconButton(
+                        onPressed: _openMetrics,
+                        icon: const Icon(Icons.bar_chart_rounded),
+                        color: _textPrimary,
+                        iconSize: 26,
+                        tooltip: AppStrings.instance.metricsTooltip,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 2),

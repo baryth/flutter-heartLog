@@ -35,6 +35,14 @@ abstract class AppStrings {
   String get pulse;
   String get cancel;
   String get save;
+  String get metricsTitle;
+  String get periodWeek;
+  String get periodMonth;
+  String get periodYear;
+  String get periodAll;
+  String get average;
+  String get noData;
+  String get metricsTooltip;
 }
 
 class _EnglishStrings extends AppStrings {
@@ -63,6 +71,14 @@ class _EnglishStrings extends AppStrings {
   @override String get pulse => 'Pulse';
   @override String get cancel => 'Cancel';
   @override String get save => 'Save';
+  @override String get metricsTitle => 'Metrics';
+  @override String get metricsTooltip => 'Metrics';
+  @override String get periodWeek => 'Week';
+  @override String get periodMonth => 'Month';
+  @override String get periodYear => 'Year';
+  @override String get periodAll => 'All';
+  @override String get average => 'AVERAGE';
+  @override String get noData => 'No data for this period';
 }
 
 class _PolishStrings extends AppStrings {
@@ -91,4 +107,12 @@ class _PolishStrings extends AppStrings {
   @override String get pulse => 'Puls';
   @override String get cancel => 'Anuluj';
   @override String get save => 'Zapisz';
+  @override String get metricsTitle => 'Metryki';
+  @override String get metricsTooltip => 'Metryki';
+  @override String get periodWeek => 'Tydzień';
+  @override String get periodMonth => 'Miesiąc';
+  @override String get periodYear => 'Rok';
+  @override String get periodAll => 'Wszystkie';
+  @override String get average => 'ŚREDNIA';
+  @override String get noData => 'Brak danych w tym okresie';
 }
