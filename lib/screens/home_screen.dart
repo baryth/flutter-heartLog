@@ -17,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _pulse = 70;
   List<Measurement> _measurements = [];
   bool _saving = false;
+  int _step = 0; // 0=systolic, 1=diastolic, 2=pulse, 3=all done
 
   static const Color _bgColor = Color(0xFFF4F7FF);
   static const Color _textPrimary = Color(0xFF2C4A6E);
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _systolic = 120;
       _diastolic = 80;
       _pulse = 70;
+      _step = 0;
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,6 +88,41 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (_) => const HistoryScreen()),
     );
     _loadMeasurements();
+  }
+
+  Widget _buildKnob(int knobStep) {
+    const labels = ['SYSTOLIC', 'DIASTOLIC', 'PULSE'];
+    const units = ['mmHg', 'mmHg', 'bpm'];
+    const colors = [_gearSystolic, _gearDiastolic, _gearPulse];
+    const mins = [60, 40, 30];
+    const maxs = [250, 150, 200];
+    final values = [_systolic, _diastolic, _pulse];
+    final callbacks = [
+      (int v) => setState(() => _systolic = v),
+      (int v) => setState(() => _diastolic = v),
+      (int v) => setState(() => _pulse = v),
+    ];
+    final isActive = _step == knobStep;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: isActive ? 100.0 : 58.0),
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOutCubic,
+      builder: (_, gearSize, _) => AnimatedOpacity(
+        opacity: isActive ? 1.0 : 0.38,
+        duration: const Duration(milliseconds: 300),
+        child: GearKnob(
+          label: labels[knobStep],
+          unit: units[knobStep],
+          value: values[knobStep],
+          min: mins[knobStep],
+          max: maxs[knobStep],
+          gearColor: colors[knobStep],
+          gearSize: gearSize,
+          enabled: isActive,
+          onChanged: callbacks[knobStep],
+        ),
+      ),
+    );
   }
 
   @override
@@ -140,7 +177,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Container(
-                      padding: const EdgeInsets.fromLTRB(8, 22, 8, 20),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(26),
@@ -152,49 +188,87 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          GearKnob(
-                            label: 'SYSTOLIC',
-                            unit: 'mmHg',
-                            value: _systolic,
-                            min: 60,
-                            max: 250,
-                            gearColor: _gearSystolic,
-                            onChanged: (v) => setState(() => _systolic = v),
-                          ),
-                          Container(width: 1, height: 110, color: _divider),
-                          GearKnob(
-                            label: 'DIASTOLIC',
-                            unit: 'mmHg',
-                            value: _diastolic,
-                            min: 40,
-                            max: 150,
-                            gearColor: _gearDiastolic,
-                            onChanged: (v) => setState(() => _diastolic = v),
-                          ),
-                          Container(width: 1, height: 110, color: _divider),
-                          GearKnob(
-                            label: 'PULSE',
-                            unit: 'bpm',
-                            value: _pulse,
-                            min: 30,
-                            max: 200,
-                            gearColor: _gearPulse,
-                            onChanged: (v) => setState(() => _pulse = v),
-                          ),
-                        ],
+                      child: SizedBox(
+                        height: 218,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(child: Center(child: _buildKnob(0))),
+                            Container(width: 1, height: 218, color: _divider),
+                            Expanded(child: Center(child: _buildKnob(1))),
+                            Container(width: 1, height: 218, color: _divider),
+                            Expanded(child: Center(child: _buildKnob(2))),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 7),
-                  const Text(
-                    'Drag knobs left or right to adjust',
-                    style: TextStyle(fontSize: 11, color: _textSecondary),
+                  Text(
+                    _step >= 3
+                        ? 'All values set  —  tap Add to save'
+                        : '${ ['Set systolic', 'Set diastolic', 'Set pulse'][_step]}  ·  drag to adjust',
+                    style: const TextStyle(fontSize: 11, color: _textSecondary),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _step < 3
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 44,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: OutlinedButton(
+                                  key: ValueKey(_step),
+                                  onPressed: () => setState(() => _step++),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: [
+                                        _gearSystolic,
+                                        _gearDiastolic,
+                                        _gearPulse,
+                                      ][_step],
+                                      width: 1.5,
+                                    ),
+                                    foregroundColor: _textPrimary,
+                                    backgroundColor: [
+                                      _gearSystolic,
+                                      _gearDiastolic,
+                                      _gearPulse,
+                                    ][_step].withValues(alpha: 0.15),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        [
+                                          'Confirm systolic',
+                                          'Confirm diastolic',
+                                          'Confirm pulse',
+                                        ][_step],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.check_rounded, size: 17),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
 
                   // Add button
                   Padding(
@@ -203,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: double.infinity,
                       height: 54,
                       child: ElevatedButton(
-                        onPressed: _saving ? null : _addMeasurement,
+                        onPressed: (_saving || _step < 3) ? null : _addMeasurement,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _buttonColor,
                           foregroundColor: Colors.white,
