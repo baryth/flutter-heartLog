@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 class GearKnob extends StatefulWidget {
   final String label;
   final String unit;
+  final double gearSize;
+  final bool enabled;
   final int value;
   final int min;
   final int max;
@@ -20,6 +22,8 @@ class GearKnob extends StatefulWidget {
     required this.gearColor,
     required this.onChanged,
     this.unit = '',
+    this.gearSize = 90.0,
+    this.enabled = true,
   });
 
   @override
@@ -54,62 +58,66 @@ class _GearKnobState extends State<GearKnob> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: widget.gearColor.withValues(alpha: 0.45),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
+    return IgnorePointer(
+      ignoring: !widget.enabled,
+      child: GestureDetector(
+        onPanStart: _onPanStart,
+        onPanUpdate: _onPanUpdate,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.gearColor.withValues(alpha: 0.45),
+                    blurRadius: widget.gearSize * 0.15,
+                    offset: Offset(0, widget.gearSize * 0.055),
+                  ),
+                ],
+              ),
+              child: CustomPaint(
+                size: Size(widget.gearSize, widget.gearSize),
+                painter: _GearPainter(angle: _angle, color: widget.gearColor),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              '${widget.value}',
+              style: TextStyle(
+                fontSize: (widget.gearSize * 0.38).clamp(16.0, 44.0),
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2C4A6E),
+                height: 1,
+              ),
+            ),
+            if (widget.unit.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                widget.unit,
+                style: TextStyle(
+                  fontSize: (widget.gearSize * 0.11).clamp(8.0, 12.0),
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.4,
                 ),
-              ],
-            ),
-            child: CustomPaint(
-              size: const Size(90, 90),
-              painter: _GearPainter(angle: _angle, color: widget.gearColor),
-            ),
-          ),
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 14),
-        Text(
-          '${widget.value}',
-          style: const TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C4A6E),
-            height: 1,
-          ),
-        ),
-        if (widget.unit.isNotEmpty) ...[
-          const SizedBox(height: 2),
-          Text(
-            widget.unit,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
-      ],
+      ),
     );
   }
 }
@@ -125,8 +133,8 @@ class _GearPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final outerRadius = size.width / 2 - 3;
     const numTeeth = 12;
-    const toothHeight = 9.0;
-    const toothWidth = 6.5;
+    final toothHeight = outerRadius * 0.20;
+    final toothWidth = outerRadius * 0.14;
 
     final bodyPaint = Paint()
       ..color = color
@@ -147,7 +155,7 @@ class _GearPainter extends CustomPainter {
             width: toothWidth,
             height: toothHeight,
           ),
-          const Radius.circular(2),
+          Radius.circular(toothWidth * 0.3),
         ),
         bodyPaint,
       );
@@ -164,13 +172,13 @@ class _GearPainter extends CustomPainter {
       Paint()
         ..color = Colors.white.withValues(alpha: 0.20)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3,
+        ..strokeWidth = (outerRadius * 0.063).clamp(1.5, 3.0),
     );
 
     // Spokes
     final spokePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.30)
-      ..strokeWidth = 2.5
+      ..strokeWidth = (outerRadius * 0.053).clamp(1.0, 2.5)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
     for (int i = 0; i < 6; i++) {

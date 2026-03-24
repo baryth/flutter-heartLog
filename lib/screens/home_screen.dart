@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../l10n/strings.dart';
 import '../models/measurement.dart';
 import '../widgets/gear_knob.dart';
+import 'history_screen.dart';
+import 'metrics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,15 +19,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int _pulse = 70;
   List<Measurement> _measurements = [];
   bool _saving = false;
+  int _step = 0; // 0=systolic, 1=diastolic, 2=pulse, 3=all done
 
   static const Color _bgColor = Color(0xFFF4F7FF);
   static const Color _textPrimary = Color(0xFF2C4A6E);
   static const Color _textSecondary = Color(0xFF7A9BB5);
-  static const Color _gearSystolic = Color(0xFFFFADB8);
-  static const Color _gearDiastolic = Color(0xFF9BBFE8);
-  static const Color _gearPulse = Color(0xFF99D6B5);
+  static const Color _gearSystolic = Color(0xFFADD8F0);
+  static const Color _gearDiastolic = Color(0xFF5B8DB8);
+  static const Color _gearPulse = Color(0xFFFF9090);
+  static const Color _confirmColor = Color(0xFF99D6B5);
   static const Color _buttonColor = Color(0xFF6B9DC2);
-  static const Color _divider = Color(0xFFE4EDF7);
 
   @override
   void initState() {
@@ -53,11 +57,12 @@ class _HomeScreenState extends State<HomeScreen> {
       _systolic = 120;
       _diastolic = 80;
       _pulse = 70;
+      _step = 0;
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Measurement saved'),
+          content: Text(AppStrings.instance.measurementSaved),
           backgroundColor: _buttonColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -79,38 +84,118 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${dt.year}-${p(dt.month)}-${p(dt.day)} ${p(dt.hour)}:${p(dt.minute)}';
   }
 
+  Future<void> _openHistory() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+    );
+    _loadMeasurements();
+  }
+
+  void _openMetrics() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MetricsScreen()),
+    );
+  }
+
+  Widget _buildKnob(int knobIndex, {required bool active, VoidCallback? onTap}) {
+    final s = AppStrings.instance;
+    final labels = [s.systolic.toUpperCase(), s.diastolic.toUpperCase(), s.pulse.toUpperCase()];
+    const units = ['mmHg', 'mmHg', 'bpm'];
+    const colors = [_gearSystolic, _gearDiastolic, _gearPulse];
+    const mins = [60, 40, 30];
+    const maxs = [250, 150, 200];
+    final values = [_systolic, _diastolic, _pulse];
+    final callbacks = [
+      (int v) => setState(() => _systolic = v),
+      (int v) => setState(() => _diastolic = v),
+      (int v) => setState(() => _pulse = v),
+    ];
+    final knob = Opacity(
+      opacity: active ? 1.0 : 0.38,
+      child: GearKnob(
+        label: labels[knobIndex],
+        unit: units[knobIndex],
+        value: values[knobIndex],
+        min: mins[knobIndex],
+        max: maxs[knobIndex],
+        gearColor: colors[knobIndex],
+        gearSize: active ? 100.0 : 58.0,
+        enabled: active,
+        onChanged: callbacks[knobIndex],
+      ),
+    );
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: knob,
+      );
+    }
+    return knob;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 36, 24, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Blood Pressure',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Fixed top section ──────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Header row: history button + title
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _openHistory,
+                        icon: const Icon(Icons.history_rounded),
                         color: _textPrimary,
-                        letterSpacing: -0.5,
+                        iconSize: 26,
+                        tooltip: AppStrings.instance.historyTooltip,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Track your measurements',
-                      style: TextStyle(fontSize: 13, color: _textSecondary),
-                    ),
-                    const SizedBox(height: 32),
+                      Expanded(
+                        child: Text(
+                          AppStrings.instance.appTitle,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: _textPrimary,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _openMetrics,
+                        icon: const Icon(Icons.bar_chart_rounded),
+                        color: _textPrimary,
+                        iconSize: 26,
+                        tooltip: AppStrings.instance.metricsTooltip,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppStrings.instance.appSubtitle,
+                    style: const TextStyle(fontSize: 12, color: _textSecondary),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Knobs card
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(8, 28, 8, 24),
+                  // Knobs card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(26),
@@ -122,63 +207,139 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          GearKnob(
-                            label: 'SYSTOLIC',
-                            unit: 'mmHg',
-                            value: _systolic,
-                            min: 60,
-                            max: 250,
-                            gearColor: _gearSystolic,
-                            onChanged: (v) => setState(() => _systolic = v),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 110,
-                            color: _divider,
-                          ),
-                          GearKnob(
-                            label: 'DIASTOLIC',
-                            unit: 'mmHg',
-                            value: _diastolic,
-                            min: 40,
-                            max: 150,
-                            gearColor: _gearDiastolic,
-                            onChanged: (v) => setState(() => _diastolic = v),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 110,
-                            color: _divider,
-                          ),
-                          GearKnob(
-                            label: 'PULSE',
-                            unit: 'bpm',
-                            value: _pulse,
-                            min: 30,
-                            max: 200,
-                            gearColor: _gearPulse,
-                            onChanged: (v) => setState(() => _pulse = v),
-                          ),
-                        ],
+                      child: SizedBox(
+                        height: 218,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Left: always the knob "behind" the active one (circular)
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('l$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 0 : (_step + 2) % 3,
+                                      active: false,
+                                      onTap: () {
+                                        final idx = _step >= 3 ? 0 : (_step + 2) % 3;
+                                        setState(() => _step = idx);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Center: always the active knob
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('c$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 1 : _step,
+                                      active: _step < 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Right: always the knob "ahead" of the active one (circular)
+                            Expanded(
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 280),
+                                  child: SizedBox(
+                                    key: ValueKey('r$_step'),
+                                    child: _buildKnob(
+                                      _step >= 3 ? 2 : (_step + 1) % 3,
+                                      active: false,
+                                      onTap: () {
+                                        final idx = _step >= 3 ? 2 : (_step + 1) % 3;
+                                        setState(() => _step = idx);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Drag knobs left or right to adjust',
-                      style: TextStyle(fontSize: 11, color: _textSecondary),
-                    ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    _step >= 3
+                        ? AppStrings.instance.allValuesSet
+                        : '${[AppStrings.instance.setSystolic, AppStrings.instance.setDiastolic, AppStrings.instance.setPulse][_step]}  ·  ${AppStrings.instance.dragToAdjust}',
+                    style: const TextStyle(fontSize: 11, color: _textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _step < 3
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 44,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: OutlinedButton(
+                                  key: ValueKey(_step),
+                                  onPressed: () => setState(() => _step++),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: _confirmColor,
+                                      width: 1.5,
+                                    ),
+                                    foregroundColor: _textPrimary,
+                                    backgroundColor: _confirmColor.withValues(alpha: 0.15),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        [
+                                          AppStrings.instance.confirmSystolic,
+                                          AppStrings.instance.confirmDiastolic,
+                                          AppStrings.instance.confirmPulse,
+                                        ][_step],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        _step == 2 ? Icons.favorite_rounded : Icons.check_rounded,
+                                        size: 17,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
 
-                    // Add button
-                    SizedBox(
+                  // Add button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 54,
                       child: ElevatedButton(
-                        onPressed: _saving ? null : _addMeasurement,
+                        onPressed: (_saving || _step < 3) ? null : _addMeasurement,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _buttonColor,
                           foregroundColor: Colors.white,
@@ -198,9 +359,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'Add',
-                                style: TextStyle(
+                            : Text(
+                                AppStrings.instance.add,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.3,
@@ -208,94 +369,97 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 18),
 
-                    // History header
-                    if (_measurements.isNotEmpty)
-                      Row(
+                  // History section header
+                  if (_measurements.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
                         children: [
-                          const Text(
-                            'History',
-                            style: TextStyle(
-                              fontSize: 17,
+                          Text(
+                            AppStrings.instance.recent,
+                            style: const TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: _textPrimary,
                             ),
                           ),
                           const Spacer(),
                           Text(
-                            '${_measurements.length} records',
+                            '${_measurements.length} ${AppStrings.instance.records}',
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: _textSecondary,
                             ),
                           ),
                         ],
                       ),
-                    if (_measurements.isNotEmpty) const SizedBox(height: 12),
-                  ],
-                ),
+                    ),
+                  if (_measurements.isNotEmpty) const SizedBox(height: 10),
+                ],
               ),
             ),
 
-            // Empty state
-            if (_measurements.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.favorite_border_rounded,
-                        size: 52,
-                        color: _textSecondary.withValues(alpha: 0.35),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'No measurements yet',
-                        style: TextStyle(color: _textSecondary, fontSize: 15),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Add your first reading above',
-                        style: TextStyle(color: _textSecondary, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final m = _measurements[index];
-                    final isLast = index == _measurements.length - 1;
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(24, 0, 24, isLast ? 32 : 10),
-                      child: Dismissible(
-                        key: ValueKey(m.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 22),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade300,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Icon(
-                            Icons.delete_outline_rounded,
-                            color: Colors.white,
+            // ── Scrollable list or empty state (fills remaining space) ──
+            Expanded(
+              child: _measurements.isEmpty
+                  ? _EmptyState()
+                  : Stack(
+                      children: [
+                        ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                          itemCount: _measurements.length,
+                          itemBuilder: (context, index) {
+                            final m = _measurements[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Dismissible(
+                                key: ValueKey(m.id),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 22),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade300,
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  child: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                onDismissed: (_) => _deleteMeasurement(m),
+                                child: MeasurementCard(measurement: m),
+                              ),
+                            );
+                          },
+                        ),
+                        // Bottom fade fog
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 80,
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    _bgColor.withValues(alpha: 0),
+                                    _bgColor,
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        onDismissed: (_) => _deleteMeasurement(m),
-                        child: _MeasurementCard(measurement: m),
-                      ),
-                    );
-                  },
-                  childCount: _measurements.length,
-                ),
-              ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
@@ -303,24 +467,52 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _MeasurementCard extends StatelessWidget {
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.favorite_border_rounded,
+            size: 48,
+            color: Color(0x597A9BB5),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            AppStrings.instance.noMeasurements,
+            style: const TextStyle(color: Color(0xFF7A9BB5), fontSize: 14),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.instance.addFirstReading,
+            style: const TextStyle(color: Color(0xFF7A9BB5), fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MeasurementCard extends StatelessWidget {
   final Measurement measurement;
 
-  const _MeasurementCard({required this.measurement});
+  const MeasurementCard({super.key, required this.measurement});
 
   Color _statusColor() {
     final sys = measurement.systolic;
     final dia = measurement.diastolic;
-    if (sys < 120 && dia < 80) return const Color(0xFF99D6B5); // Normal
-    if (sys < 130 && dia < 80) return const Color(0xFFFFD699); // Elevated
-    if (sys < 140 || dia < 90) return const Color(0xFFFFB899); // Stage 1
-    return const Color(0xFFFFADB8); // Stage 2+
+    if (sys < 120 && dia < 80) return const Color(0xFF99D6B5);
+    if (sys < 130 && dia < 80) return const Color(0xFFFFD699);
+    if (sys < 140 || dia < 90) return const Color(0xFFFFB899);
+    return const Color(0xFFFFADB8);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -336,7 +528,7 @@ class _MeasurementCard extends StatelessWidget {
         children: [
           Container(
             width: 4,
-            height: 50,
+            height: 48,
             decoration: BoxDecoration(
               color: _statusColor(),
               borderRadius: BorderRadius.circular(2),
@@ -350,12 +542,12 @@ class _MeasurementCard extends StatelessWidget {
                 Text(
                   measurement.datetime,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Color(0xFF7A9BB5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -363,7 +555,7 @@ class _MeasurementCard extends StatelessWidget {
                     Text(
                       '${measurement.systolic} / ${measurement.diastolic}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C4A6E),
                       ),
@@ -371,16 +563,13 @@ class _MeasurementCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     const Text(
                       'mmHg',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF7A9BB5),
-                      ),
+                      style: TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Text(
                       '${measurement.pulse}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C4A6E),
                       ),
@@ -388,19 +577,12 @@ class _MeasurementCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     const Text(
                       'bpm',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF7A9BB5),
-                      ),
+                      style: TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: Color(0xFFCADCEE),
           ),
         ],
       ),

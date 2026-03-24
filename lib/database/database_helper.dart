@@ -46,6 +46,16 @@ class DatabaseHelper {
     return maps.map(Measurement.fromMap).toList();
   }
 
+  Future<int> updateMeasurement(Measurement measurement) async {
+    final db = await database;
+    return db.update(
+      'measurements',
+      measurement.toMap(),
+      where: 'id = ?',
+      whereArgs: [measurement.id],
+    );
+  }
+
   Future<int> deleteMeasurement(int id) async {
     final db = await database;
     return db.delete('measurements', where: 'id = ?', whereArgs: [id]);
