@@ -197,7 +197,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
+            const Text(
+              'Swipe left to delete · tap to edit',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
+            ),
+            const SizedBox(height: 14),
 
             // List
             Expanded(
