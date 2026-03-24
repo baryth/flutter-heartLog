@@ -54,23 +54,24 @@ class _GearKnobState extends State<GearKnob> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
+    return GestureDetector(
+      onPanStart: _onPanStart,
+      onPanUpdate: _onPanUpdate,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          child: Container(
+          const SizedBox(height: 12),
+          Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
@@ -86,7 +87,6 @@ class _GearKnobState extends State<GearKnob> {
               painter: _GearPainter(angle: _angle, color: widget.gearColor),
             ),
           ),
-        ),
         const SizedBox(height: 14),
         Text(
           '${widget.value}',
@@ -110,6 +110,7 @@ class _GearKnobState extends State<GearKnob> {
           ),
         ],
       ],
+      ),
     );
   }
 }
