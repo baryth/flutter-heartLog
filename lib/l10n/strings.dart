@@ -46,7 +46,7 @@ abstract class AppStrings {
 }
 
 class _EnglishStrings extends AppStrings {
-  @override String get appTitle => 'Blood book';
+  @override String get appTitle => 'HeartLog';
   @override String get appSubtitle => 'Track your measurements';
   @override String get setSystolic => 'Set systolic';
   @override String get setDiastolic => 'Set diastolic';
@@ -82,7 +82,7 @@ class _EnglishStrings extends AppStrings {
 }
 
 class _PolishStrings extends AppStrings {
-  @override String get appTitle => 'Krwiopijec';
+  @override String get appTitle => 'HeartLog';
   @override String get appSubtitle => 'Śledź swoje pomiary';
   @override String get setSystolic => 'Ustaw skurczowe';
   @override String get setDiastolic => 'Ustaw rozkurczowe';

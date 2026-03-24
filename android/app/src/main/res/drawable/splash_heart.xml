@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pixel-art heart — 7×6 grid, each pixel = 18 units
+  Centered in a 128×128 viewport (offset x+1, y+10)
+
+  Grid (. = empty, X = filled):
+  . X X . X X .
+  X X X X X X X
+  X X X X X X X
+  . X X X X X .
+  . . X X X . .
+  . . . X . . .
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M19,10 H55 V28 H19 Z
+            M73,10 H109 V28 H73 Z
+            M1,28 H127 V64 H1 Z
+            M19,64 H109 V82 H19 Z
+            M37,82 H91 V100 H37 Z
+            M55,100 H73 V118 H55 Z" />
+</vector>
