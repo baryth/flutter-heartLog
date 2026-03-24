@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/measurement.dart';
 import '../widgets/gear_knob.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -79,38 +80,67 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${dt.year}-${p(dt.month)}-${p(dt.day)} ${p(dt.hour)}:${p(dt.minute)}';
   }
 
+  Future<void> _openHistory() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+    );
+    _loadMeasurements();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 36, 24, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Blood Pressure',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Fixed top section ──────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Header row: history button + title
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _openHistory,
+                        icon: const Icon(Icons.history_rounded),
                         color: _textPrimary,
-                        letterSpacing: -0.5,
+                        iconSize: 26,
+                        tooltip: 'History',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Track your measurements',
-                      style: TextStyle(fontSize: 13, color: _textSecondary),
-                    ),
-                    const SizedBox(height: 32),
+                      const Expanded(
+                        child: Text(
+                          'Blood Pressure',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: _textPrimary,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 26), // balance the icon
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Track your measurements',
+                    style: TextStyle(fontSize: 12, color: _textSecondary),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Knobs card
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(8, 28, 8, 24),
+                  // Knobs card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(8, 22, 8, 20),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(26),
@@ -135,11 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             gearColor: _gearSystolic,
                             onChanged: (v) => setState(() => _systolic = v),
                           ),
-                          Container(
-                            width: 1,
-                            height: 110,
-                            color: _divider,
-                          ),
+                          Container(width: 1, height: 110, color: _divider),
                           GearKnob(
                             label: 'DIASTOLIC',
                             unit: 'mmHg',
@@ -149,11 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             gearColor: _gearDiastolic,
                             onChanged: (v) => setState(() => _diastolic = v),
                           ),
-                          Container(
-                            width: 1,
-                            height: 110,
-                            color: _divider,
-                          ),
+                          Container(width: 1, height: 110, color: _divider),
                           GearKnob(
                             label: 'PULSE',
                             unit: 'bpm',
@@ -166,17 +188,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Drag knobs left or right to adjust',
-                      style: TextStyle(fontSize: 11, color: _textSecondary),
-                    ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 7),
+                  const Text(
+                    'Drag knobs left or right to adjust',
+                    style: TextStyle(fontSize: 11, color: _textSecondary),
+                  ),
+                  const SizedBox(height: 18),
 
-                    // Add button
-                    SizedBox(
+                  // Add button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 54,
                       child: ElevatedButton(
                         onPressed: _saving ? null : _addMeasurement,
                         style: ElevatedButton.styleFrom(
@@ -208,16 +233,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 18),
 
-                    // History header
-                    if (_measurements.isNotEmpty)
-                      Row(
+                  // History section header
+                  if (_measurements.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
                         children: [
                           const Text(
-                            'History',
+                            'Recent',
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: _textPrimary,
                             ),
@@ -226,76 +254,76 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             '${_measurements.length} records',
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: _textSecondary,
                             ),
                           ),
                         ],
                       ),
-                    if (_measurements.isNotEmpty) const SizedBox(height: 12),
-                  ],
-                ),
+                    ),
+                  if (_measurements.isNotEmpty) const SizedBox(height: 10),
+                ],
               ),
             ),
 
-            // Empty state
-            if (_measurements.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.favorite_border_rounded,
-                        size: 52,
-                        color: _textSecondary.withValues(alpha: 0.35),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'No measurements yet',
-                        style: TextStyle(color: _textSecondary, fontSize: 15),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Add your first reading above',
-                        style: TextStyle(color: _textSecondary, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final m = _measurements[index];
-                    final isLast = index == _measurements.length - 1;
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(24, 0, 24, isLast ? 32 : 10),
-                      child: Dismissible(
-                        key: ValueKey(m.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 22),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade300,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Icon(
-                            Icons.delete_outline_rounded,
-                            color: Colors.white,
+            // ── Scrollable list or empty state (fills remaining space) ──
+            Expanded(
+              child: _measurements.isEmpty
+                  ? _EmptyState()
+                  : Stack(
+                      children: [
+                        ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                          itemCount: _measurements.length,
+                          itemBuilder: (context, index) {
+                            final m = _measurements[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Dismissible(
+                                key: ValueKey(m.id),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 22),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade300,
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  child: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                onDismissed: (_) => _deleteMeasurement(m),
+                                child: MeasurementCard(measurement: m),
+                              ),
+                            );
+                          },
+                        ),
+                        // Bottom fade fog
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 80,
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    _bgColor.withValues(alpha: 0),
+                                    _bgColor,
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        onDismissed: (_) => _deleteMeasurement(m),
-                        child: _MeasurementCard(measurement: m),
-                      ),
-                    );
-                  },
-                  childCount: _measurements.length,
-                ),
-              ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
@@ -303,24 +331,52 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _MeasurementCard extends StatelessWidget {
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.favorite_border_rounded,
+            size: 48,
+            color: Color(0x597A9BB5),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'No measurements yet',
+            style: TextStyle(color: Color(0xFF7A9BB5), fontSize: 14),
+          ),
+          SizedBox(height: 2),
+          Text(
+            'Add your first reading above',
+            style: TextStyle(color: Color(0xFF7A9BB5), fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MeasurementCard extends StatelessWidget {
   final Measurement measurement;
 
-  const _MeasurementCard({required this.measurement});
+  const MeasurementCard({super.key, required this.measurement});
 
   Color _statusColor() {
     final sys = measurement.systolic;
     final dia = measurement.diastolic;
-    if (sys < 120 && dia < 80) return const Color(0xFF99D6B5); // Normal
-    if (sys < 130 && dia < 80) return const Color(0xFFFFD699); // Elevated
-    if (sys < 140 || dia < 90) return const Color(0xFFFFB899); // Stage 1
-    return const Color(0xFFFFADB8); // Stage 2+
+    if (sys < 120 && dia < 80) return const Color(0xFF99D6B5);
+    if (sys < 130 && dia < 80) return const Color(0xFFFFD699);
+    if (sys < 140 || dia < 90) return const Color(0xFFFFB899);
+    return const Color(0xFFFFADB8);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -336,7 +392,7 @@ class _MeasurementCard extends StatelessWidget {
         children: [
           Container(
             width: 4,
-            height: 50,
+            height: 48,
             decoration: BoxDecoration(
               color: _statusColor(),
               borderRadius: BorderRadius.circular(2),
@@ -350,12 +406,12 @@ class _MeasurementCard extends StatelessWidget {
                 Text(
                   measurement.datetime,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Color(0xFF7A9BB5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -363,7 +419,7 @@ class _MeasurementCard extends StatelessWidget {
                     Text(
                       '${measurement.systolic} / ${measurement.diastolic}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C4A6E),
                       ),
@@ -371,16 +427,13 @@ class _MeasurementCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     const Text(
                       'mmHg',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF7A9BB5),
-                      ),
+                      style: TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Text(
                       '${measurement.pulse}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C4A6E),
                       ),
@@ -388,19 +441,12 @@ class _MeasurementCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     const Text(
                       'bpm',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF7A9BB5),
-                      ),
+                      style: TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: Color(0xFFCADCEE),
           ),
         ],
       ),
