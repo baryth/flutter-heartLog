@@ -43,6 +43,8 @@ abstract class AppStrings {
   String get average;
   String get noData;
   String get metricsTooltip;
+  String get donateMessage;
+  String get donateDismiss;
 }
 
 class _EnglishStrings extends AppStrings {
@@ -79,6 +81,8 @@ class _EnglishStrings extends AppStrings {
   @override String get periodAll => 'All';
   @override String get average => 'AVERAGE';
   @override String get noData => 'No data for this period';
+  @override String get donateMessage => 'If you like it you can Donate';
+  @override String get donateDismiss => 'Maybe later';
 }
 
 class _PolishStrings extends AppStrings {
@@ -115,4 +119,6 @@ class _PolishStrings extends AppStrings {
   @override String get periodAll => 'Wszystkie';
   @override String get average => 'ŚREDNIA';
   @override String get noData => 'Brak danych w tym okresie';
+  @override String get donateMessage => 'Jeśli Ci się podoba, możesz Wesprzeć';
+  @override String get donateDismiss => 'Może później';
 }

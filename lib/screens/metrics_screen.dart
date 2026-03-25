@@ -31,6 +31,44 @@ class _MetricsScreenState extends State<MetricsScreen> {
     _load();
   }
 
+  void _showDonateModal() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.volunteer_activism_rounded,
+                size: 48, color: Color(0xFFFF9090)),
+            const SizedBox(height: 16),
+            Text(
+              AppStrings.instance.donateMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: _primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: TextButton.styleFrom(
+                  foregroundColor: _secondary,
+                ),
+                child: Text(AppStrings.instance.donateDismiss),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _load() async {
     final data = await DatabaseHelper.instance.getAllMeasurements();
     setState(() => _all = data.reversed.toList()); // ASC for chart
@@ -92,7 +130,14 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 22),
+                  IconButton(
+                    onPressed: _showDonateModal,
+                    icon: const Icon(Icons.volunteer_activism_rounded),
+                    color: _secondary,
+                    iconSize: 22,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ],
               ),
             ),
