@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _pulse = 70;
   List<Measurement> _measurements = [];
   bool _saving = false;
+  bool _blocked = false;
   int _step = 0; // 0=systolic, 1=diastolic, 2=pulse, 3=all done
 
   static const Color _bgColor = Color(0xFFF4F7FF);
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _loadMeasurements();
     setState(() {
       _saving = false;
+      _blocked = true;
       _systolic = 120;
       _diastolic = 80;
       _pulse = 70;
@@ -70,6 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _blocked = false);
   }
 
   Future<void> _deleteMeasurement(Measurement m) async {
@@ -291,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 duration: const Duration(milliseconds: 200),
                                 child: OutlinedButton(
                                   key: ValueKey(_step),
-                                  onPressed: () => setState(() => _step++),
+                                  onPressed: _blocked ? null : () => setState(() => _step++),
                                   style: OutlinedButton.styleFrom(
                                     side: const BorderSide(
                                       color: _confirmColor,
