@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/app_colors.dart';
 
 class GearKnob extends StatefulWidget {
   final String label;
@@ -13,6 +14,11 @@ class GearKnob extends StatefulWidget {
   final Color gearColor;
   final ValueChanged<int> onChanged;
 
+  /// Called when the user starts / stops dragging the knob. Lets the parent
+  /// suppress system back gestures while a value is being adjusted.
+  final VoidCallback? onAdjustStart;
+  final VoidCallback? onAdjustEnd;
+
   const GearKnob({
     super.key,
     required this.label,
@@ -21,6 +27,8 @@ class GearKnob extends StatefulWidget {
     required this.max,
     required this.gearColor,
     required this.onChanged,
+    this.onAdjustStart,
+    this.onAdjustEnd,
     this.unit = '',
     this.gearSize = 90.0,
     this.enabled = true,
@@ -41,6 +49,7 @@ class _GearKnobState extends State<GearKnob> {
   void _onPanStart(DragStartDetails details) {
     _totalDrag = 0;
     _baseValue = widget.value;
+    widget.onAdjustStart?.call();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -56,6 +65,10 @@ class _GearKnobState extends State<GearKnob> {
     });
   }
 
+  void _onPanEnd(DragEndDetails details) => widget.onAdjustEnd?.call();
+
+  void _onPanCancel() => widget.onAdjustEnd?.call();
+
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
@@ -63,6 +76,8 @@ class _GearKnobState extends State<GearKnob> {
       child: GestureDetector(
         onPanStart: _onPanStart,
         onPanUpdate: _onPanUpdate,
+        onPanEnd: _onPanEnd,
+        onPanCancel: _onPanCancel,
         behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -99,7 +114,7 @@ class _GearKnobState extends State<GearKnob> {
               style: TextStyle(
                 fontSize: (widget.gearSize * 0.38).clamp(16.0, 44.0),
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2C4A6E),
+                color: AppColors.textPrimary,
                 height: 1,
               ),
             ),
