@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../l10n/strings.dart';
 import '../models/measurement.dart';
+import '../theme/app_colors.dart';
 import 'home_screen.dart' show MeasurementCard;
 
 class HistoryScreen extends StatefulWidget {
@@ -14,53 +15,15 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   List<Measurement> _measurements = [];
 
-  static const Color _bgColor = Color(0xFFF4F7FF);
-  static const Color _textPrimary = Color(0xFF2C4A6E);
-  static const Color _textSecondary = Color(0xFF7A9BB5);
-  static const Color _buttonColor = Color(0xFF6B9DC2);
+  static const Color _bgColor = AppColors.bg;
+  static const Color _textPrimary = AppColors.textPrimary;
+  static const Color _textSecondary = AppColors.textSecondary;
+  static const Color _buttonColor = AppColors.primary;
 
   @override
   void initState() {
     super.initState();
     _loadMeasurements();
-  }
-
-  void _showDonateModal() {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.volunteer_activism_rounded,
-                size: 48, color: Color(0xFFFF9090)),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.instance.donateMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: _textPrimary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(
-                  foregroundColor: _textSecondary,
-                ),
-                child: Text(AppStrings.instance.donateDismiss),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _loadMeasurements() async {
@@ -140,7 +103,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFD0E0EE)),
+                      side: const BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -223,14 +186,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: _showDonateModal,
-                    icon: const Icon(Icons.volunteer_activism_rounded),
-                    color: _textSecondary,
-                    iconSize: 22,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                  const SizedBox(width: 22),
                 ],
               ),
             ),
@@ -238,7 +194,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Text(
               AppStrings.instance.swipeHint,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 14),
 
@@ -252,13 +208,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           const Icon(
                             Icons.favorite_border_rounded,
                             size: 48,
-                            color: Color(0x597A9BB5),
+                            color: Color(0x598786AE),
                           ),
                           const SizedBox(height: 10),
                           Text(
                             AppStrings.instance.noMeasurements,
                             style: const TextStyle(
-                              color: Color(0xFF7A9BB5),
+                              color: AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -279,7 +235,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsets.only(right: 22),
                               decoration: BoxDecoration(
-                                color: Colors.red.shade300,
+                                color: AppColors.statusStage2,
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               child: const Icon(
@@ -339,8 +295,8 @@ class _ValueAdjuster extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const Color _textPrimary = Color(0xFF2C4A6E);
-  static const Color _textSecondary = Color(0xFF7A9BB5);
+  static const Color _textPrimary = AppColors.textPrimary;
+  static const Color _textSecondary = AppColors.textSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -411,16 +367,16 @@ class _AdjustButton extends StatelessWidget {
         height: 36,
         decoration: BoxDecoration(
           color: enabled
-              ? const Color(0xFFEBF3FF)
-              : const Color(0xFFF0F0F0),
+              ? AppColors.surfaceTint
+              : AppColors.disabledBg,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
           size: 18,
           color: enabled
-              ? const Color(0xFF6B9DC2)
-              : const Color(0xFFCCCCCC),
+              ? AppColors.primary
+              : AppColors.disabledFg,
         ),
       ),
     );

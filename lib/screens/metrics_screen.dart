@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../l10n/strings.dart';
 import '../models/measurement.dart';
+import '../theme/app_colors.dart';
 
 enum _Period { week, month, year, all }
 
@@ -18,55 +19,17 @@ class _MetricsScreenState extends State<MetricsScreen> {
   List<Measurement> _all = [];
   _Period _period = _Period.month;
 
-  static const _bg = Color(0xFFF4F7FF);
-  static const _primary = Color(0xFF2C4A6E);
-  static const _secondary = Color(0xFF7A9BB5);
-  static const _systolicColor = Color(0xFFADD8F0);
-  static const _diastolicColor = Color(0xFF5B8DB8);
-  static const _pulseColor = Color(0xFFFF9090);
+  static const _bg = AppColors.bg;
+  static const _primary = AppColors.textPrimary;
+  static const _secondary = AppColors.textSecondary;
+  static const _systolicColor = AppColors.gearSystolic;
+  static const _diastolicColor = AppColors.gearDiastolic;
+  static const _pulseColor = AppColors.gearPulse;
 
   @override
   void initState() {
     super.initState();
     _load();
-  }
-
-  void _showDonateModal() {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.volunteer_activism_rounded,
-                size: 48, color: Color(0xFFFF9090)),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.instance.donateMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: _primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: TextButton.styleFrom(
-                  foregroundColor: _secondary,
-                ),
-                child: Text(AppStrings.instance.donateDismiss),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _load() async {
@@ -130,14 +93,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: _showDonateModal,
-                    icon: const Icon(Icons.volunteer_activism_rounded),
-                    color: _secondary,
-                    iconSize: 22,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                  const SizedBox(width: 22),
                 ],
               ),
             ),
@@ -153,7 +109,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6B9DC2).withValues(alpha: 0.08),
+                      color: AppColors.primary.withValues(alpha: 0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -199,7 +155,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                           const Icon(
                             Icons.bar_chart_rounded,
                             size: 48,
-                            color: Color(0x597A9BB5),
+                            color: Color(0x598786AE),
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -224,7 +180,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                               borderRadius: BorderRadius.circular(22),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF6B9DC2).withValues(alpha: 0.08),
+                                  color: AppColors.primary.withValues(alpha: 0.08),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -261,7 +217,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                               borderRadius: BorderRadius.circular(22),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF6B9DC2).withValues(alpha: 0.08),
+                                  color: AppColors.primary.withValues(alpha: 0.08),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -291,7 +247,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                     Container(
                                       width: 1,
                                       height: 50,
-                                      color: const Color(0xFFE4EDF7),
+                                      color: AppColors.border,
                                     ),
                                     _AvgStat(
                                       label: s.diastolic,
@@ -302,7 +258,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                     Container(
                                       width: 1,
                                       height: 50,
-                                      color: const Color(0xFFE4EDF7),
+                                      color: AppColors.border,
                                     ),
                                     _AvgStat(
                                       label: s.pulse,
@@ -354,7 +310,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
         drawVerticalLine: false,
         horizontalInterval: 20,
         getDrawingHorizontalLine: (_) => const FlLine(
-          color: Color(0xFFE4EDF7),
+          color: AppColors.border,
           strokeWidth: 1,
         ),
       ),
@@ -366,7 +322,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
             interval: 20,
             getTitlesWidget: (val, _) => Text(
               val.toInt().toString(),
-              style: const TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
+              style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
             ),
           ),
         ),
@@ -387,7 +343,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
                   label,
-                  style: const TextStyle(fontSize: 9, color: Color(0xFF7A9BB5)),
+                  style: const TextStyle(fontSize: 9, color: AppColors.textSecondary),
                 ),
               );
             },
@@ -406,7 +362,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (_) => Colors.white,
           tooltipRoundedRadius: 10,
-          tooltipBorder: const BorderSide(color: Color(0xFFE4EDF7)),
+          tooltipBorder: const BorderSide(color: AppColors.border),
           getTooltipItems: (spots) {
             final colors = [_systolicColor, _diastolicColor, _pulseColor];
             return spots.asMap().entries.map((e) {
@@ -466,7 +422,7 @@ class _LegendDot extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -492,7 +448,7 @@ class _AvgStat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF7A9BB5)),
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 6),
         Text(
@@ -506,7 +462,7 @@ class _AvgStat extends StatelessWidget {
         ),
         Text(
           unit,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF7A9BB5)),
+          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
       ],
     );
